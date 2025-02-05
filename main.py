@@ -4,7 +4,7 @@ from typing import Annotated
 
 from sqlmodel import SQLModel, Field, create_engine, Session
 
-from .forms import Bus
+from .models import Bus
 
 
 app = FastAPI()
