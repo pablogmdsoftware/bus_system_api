@@ -1,11 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Annotated
-
 from sqlmodel import SQLModel, Field, create_engine, Session
-
-from .models import Bus
-
+from models import Bus
 
 app = FastAPI()
 
