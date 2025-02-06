@@ -40,8 +40,11 @@ def add_bus(form: BusForm, session: SessionDep) -> Bus:
     return bus
 
 @app.get("/buses/{bus_id}/")
-def get_bus():
-    pass
+def get_bus(bus_id: str, session: SessionDep):
+    bus = session.get(Bus, bus_id)
+    if not bus:
+        return HTTPException(status_code=404, detail="Bus not found")
+    return bus
 
 @app.put("/buses/{bus_id}/update/")
 def update_bus():
