@@ -60,5 +60,10 @@ def update_bus(bus_id: str, form: UpdateBusForm, session: SessionDep):
     return bus
 
 @app.delete("/buses/{bus_id}/")
-def delete_bus():
-    pass
+def delete_bus(bus_id: str, session: SessionDep):
+    bus = session.get(Bus, bus_id)
+    if not bus:
+        return HTTPException(status_code=404, detail="Bus not found")
+    session.delete(bus)
+    session.commit()
+    return {"ok": True}
