@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Annotated
-from sqlmodel import SQLModel, Field, create_engine, Session
+from sqlmodel import SQLModel, Field, Session, select
 from sqlalchemy.exc import IntegrityError
 from forms import BusForm, UpdateBusForm
 from models import Bus, engine
@@ -17,7 +17,11 @@ SessionDep = Annotated[Session, Depends(get_session)]
 app = FastAPI()
 
 @app.get("/buses/")
-def get_buses():
+def get_buses(session: SessionDep, limit: int | None = None) -> list[Bus]:
+    if limit:
+        buses = session.exec(select(Bus).limit(limit)).all()
+    else:
+        buses = session.exec(select(Bus)).all()
     return buses
 
 @app.post("/buses/")
