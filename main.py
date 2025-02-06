@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Annotated
 from sqlmodel import SQLModel, Field, create_engine, Session
 from sqlalchemy.exc import IntegrityError
-from forms import BusForm
+from forms import BusForm, UpdateBusForm
 from models import Bus, engine
 
 
@@ -46,10 +46,19 @@ def get_bus(bus_id: str, session: SessionDep):
         return HTTPException(status_code=404, detail="Bus not found")
     return bus
 
-@app.put("/buses/{bus_id}/update/")
-def update_bus():
-    pass
+@app.put("/buses/{bus_id}/")
+def update_bus(bus_id: str, form: UpdateBusForm, session: SessionDep):
+    bus = session.get(Bus, bus_id)
+    if not bus:
+        return HTTPException(status_code=404, detail="Bus not found")
+    bus.seats = form.seats
+    bus.seats_first_row  = form.seats_first_row
+    bus.seats_reduced_mobility = form.seats_reduced_mobility
+    session.add(bus)
+    session.commit()
+    session.refresh(bus)
+    return bus
 
-@app.delete("/buses/{bus_id}/delete/")
+@app.delete("/buses/{bus_id}/")
 def delete_bus():
     pass

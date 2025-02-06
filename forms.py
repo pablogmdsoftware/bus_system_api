@@ -16,3 +16,6 @@ class BusForm(BaseModel):
                 "The number of seats must be a multiple of 4 after subtracting the first row."
             )
         return self
+
+class UpdateBusForm(BusForm):
+    bus_id: None = None
