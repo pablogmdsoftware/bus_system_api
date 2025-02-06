@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field, model_validator
 from typing import Annotated
 from typing_extensions import Self
 
-class Bus(BaseModel):
+class BusForm(BaseModel):
     bus_id: str = Field(pattern=r'[A-Z]{2}[0-9]{2}')
     seats : int = Field(ge=8,le=72)
     seats_first_row : int = Field(ge=1,le=4)
