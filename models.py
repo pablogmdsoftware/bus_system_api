@@ -1,6 +1,16 @@
 from sqlmodel import SQLModel, Field, create_engine
 
 
+CITIES = {
+    "M":"Madrid",
+    "B":"Barcelona",
+    "TO":"Toledo",
+    "BU":"Burgos",
+    "SO":"Soria",
+    "OV":"Oviedo",
+    "PO":"Pontevedra",
+}
+
 class Bus(SQLModel, table=True):
     __tablename__ = "booking_bus"
     bus_id: str = Field(primary_key=True)

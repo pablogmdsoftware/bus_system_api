@@ -4,7 +4,7 @@ from typing import Annotated
 from sqlmodel import SQLModel, Field, Session, select
 from sqlalchemy.exc import IntegrityError
 from forms import BusForm, UpdateBusForm
-from models import Bus, engine
+from models import Bus, engine, CITIES
 
 
 def get_session():
@@ -71,3 +71,7 @@ def delete_bus(bus_id: str, session: SessionDep):
     session.delete(bus)
     session.commit()
     return {"ok": True}
+
+@app.get("/cities/")
+def get_cities():
+    return CITIES
