@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field, model_validator
 from typing import Annotated
 from typing_extensions import Self
+from models import CityChoices
+from datetime import date
 
 class BusForm(BaseModel):
     bus_id: str = Field(pattern=r'[A-Z]{2}[0-9]{2}',max_length=4)
@@ -19,3 +21,12 @@ class BusForm(BaseModel):
 
 class UpdateBusForm(BusForm):
     bus_id: None = None
+
+class TravelQuery(BaseModel):
+    """
+    This model filter queries to search travels in the database. The schedule format
+    is ISO 8601 (yyyy-mm-dd).
+    """
+    origin: CityChoices
+    destination: CityChoices
+    schedule: date

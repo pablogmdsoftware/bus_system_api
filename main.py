@@ -1,11 +1,12 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Annotated
 from sqlmodel import SQLModel, Field, Session, select
 from sqlalchemy.exc import IntegrityError
-from forms import BusForm, UpdateBusForm
+from forms import BusForm, UpdateBusForm, TravelQuery
 from models import Bus, Travel, engine, CITIES
-
+from datetime import datetime
+import pytz
 
 def get_session():
     with Session(engine) as session:
@@ -25,7 +26,7 @@ def get_buses(session: SessionDep, limit: int | None = None) -> list[Bus]:
     return buses
 
 @app.post("/buses/")
-def add_bus(form: BusForm, session: SessionDep) -> Bus:
+def add_bus(form: BusForm, session: SessionDep):
     bus = Bus(
         bus_id = form.bus_id,
         seats = form.seats,
@@ -77,9 +78,30 @@ def get_cities():
     return CITIES
 
 @app.get("/travels/")
-def get_travels(session: SessionDep, limit: int | None = None) -> list[Travel]:
-    if limit:
-        travels = session.exec(select(Travel).limit(limit)).all()
-    else:
-        travels = session.exec(select(Travel)).all()
+def get_travels(session: SessionDep, query: Annotated[TravelQuery, Query()]):
+    first_hour = datetime(
+        year = query.schedule.year,
+        month = query.schedule.month,
+        day = query.schedule.day,
+        hour = 0,
+        minute = 0,
+        tzinfo = pytz.timezone('Europe/Madrid'),
+        )
+    next_day = datetime(
+        year = query.schedule.year,
+        month = query.schedule.month,
+        day = query.schedule.day + 1,
+        hour = 0,
+        minute = 0,
+        tzinfo = pytz.timezone('Europe/Madrid'),
+    )
+
+    travels = session.exec(select(Travel)
+        .where(Travel.schedule > first_hour, Travel.schedule < next_day)     
+        .where(Travel.origin == query.origin)
+        .where(Travel.destination == query.destination)).all()
+
+    if not travels:
+        return HTTPException(status_code=404, detail="Travels not found")
+
     return travels
