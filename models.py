@@ -30,7 +30,7 @@ class Bus(SQLModel, table=True):
     seats_first_row: int = Field()
     seats_reduced_mobility: int = Field()
     
-    travels: list["Travel"] = Relationship(back_populates="travel",passive_deletes="all")
+    # travels: list["Travel"] = Relationship(back_populates="travel",passive_deletes="all")
 
 class Travel(SQLModel, table=True):
     __tablename__ = 'booking_travel'
@@ -41,7 +41,7 @@ class Travel(SQLModel, table=True):
     bus_id: str = Field(max_length=4,foreign_key='booking_bus.bus_id')
 
 
-engine = create_engine("postgresql://fastapi:qwer1234@localhost:5432/fastapi_test")
+engine = create_engine("postgresql://workuser:qwer1234@localhost:5432/bus_system")
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
