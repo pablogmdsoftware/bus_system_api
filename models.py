@@ -4,6 +4,15 @@ from sqlmodel import create_engine
 from datetime import datetime
 from enum import Enum
 
+CITIES = {
+    "M":"Madrid",
+    "B":"Barcelona",
+    "TO":"Toledo",
+    "BU":"Burgos",
+    "SO":"Soria",
+    "OV":"Oviedo",
+    "PO":"Pontevedra",
+}
 
 class CitiesEnum(str, Enum):
     madrid = "M"
