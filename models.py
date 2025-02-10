@@ -14,7 +14,7 @@ CITIES = {
     "PO":"Pontevedra",
 }
 
-class CitiesEnum(str, Enum):
+class CityChoices(str, Enum):
     madrid = "M"
     barcelona = "B"
     toledo = "TO"
