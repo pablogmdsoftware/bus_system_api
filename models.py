@@ -1,15 +1,16 @@
 from sqlmodel import SQLModel, Field, create_engine
+from enum import Enum
 
 
-CITIES = {
-    "M":"Madrid",
-    "B":"Barcelona",
-    "TO":"Toledo",
-    "BU":"Burgos",
-    "SO":"Soria",
-    "OV":"Oviedo",
-    "PO":"Pontevedra",
-}
+class CitiesEnum(str, Enum):
+    madrid = "M"
+    barcelona = "B"
+    toledo = "TO"
+    burgos = "BU"
+    soria = "SO"
+    oviedo = "OV"
+    pontevedra = "PO"
+
 
 class Bus(SQLModel, table=True):
     __tablename__ = "booking_bus"
