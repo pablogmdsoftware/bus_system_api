@@ -63,7 +63,7 @@ class Customer(SQLModel, table=True):
     user_id: int = Field(foreign_key='auth_user.id',unique=True)
 
 
-engine = create_engine("postgresql://fastapi:qwer1234@localhost:5432/fastapi_test")
+engine = create_engine("postgresql://workuser:qwer1234@localhost:5432/bus_system")
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)

@@ -30,3 +30,10 @@ class TravelQuery(BaseModel):
     origin: CityChoices
     destination: CityChoices
     schedule: date
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str | None = None
