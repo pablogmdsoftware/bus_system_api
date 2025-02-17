@@ -10,13 +10,11 @@ import pytz
 from forms import BusForm, UpdateBusForm, TravelQuery, Token, TokenData
 from models import Bus, Travel, User, Customer, CITIES
 from dependencies import SessionDep, authenticate_user, create_access_token, get_current_user
-
-
-ACCESS_TOKEN_EXPIRE_MINUTES = 90
+from dependencies import ACCESS_TOKEN_EXPIRE_MINUTES
 
 app = FastAPI()
 
-@app.get("/buses/")
+@app.get("/buses")
 def get_buses(session: SessionDep, limit: int | None = None) -> list[Bus]:
     if limit:
         buses = session.exec(select(Bus).limit(limit)).all()
@@ -24,7 +22,7 @@ def get_buses(session: SessionDep, limit: int | None = None) -> list[Bus]:
         buses = session.exec(select(Bus)).all()
     return buses
 
-@app.post("/buses/")
+@app.post("/buses")
 def add_bus(form: BusForm, session: SessionDep):
     bus = Bus(
         bus_id = form.bus_id,
@@ -43,14 +41,14 @@ def add_bus(form: BusForm, session: SessionDep):
         )
     return bus
 
-@app.get("/buses/{bus_id}/")
+@app.get("/buses/{bus_id}")
 def get_bus(bus_id: str, session: SessionDep):
     bus = session.get(Bus, bus_id)
     if not bus:
         return HTTPException(status_code=404, detail="Bus not found")
     return bus
 
-@app.put("/buses/{bus_id}/")
+@app.put("/buses/{bus_id}")
 def update_bus(bus_id: str, form: UpdateBusForm, session: SessionDep):
     bus = session.get(Bus, bus_id)
     if not bus:
@@ -63,7 +61,7 @@ def update_bus(bus_id: str, form: UpdateBusForm, session: SessionDep):
     session.refresh(bus)
     return bus
 
-@app.delete("/buses/{bus_id}/")
+@app.delete("/buses/{bus_id}")
 def delete_bus(bus_id: str, session: SessionDep):
     bus = session.get(Bus, bus_id)
     if not bus:
@@ -72,11 +70,11 @@ def delete_bus(bus_id: str, session: SessionDep):
     session.commit()
     return {"ok": True}
 
-@app.get("/cities/")
+@app.get("/cities")
 def get_cities():
     return CITIES
 
-@app.get("/travels/")
+@app.get("/travels")
 def get_travels(session: SessionDep, query: Annotated[TravelQuery, Query()]):
     first_hour = datetime(
         year = query.schedule.year,
@@ -105,7 +103,7 @@ def get_travels(session: SessionDep, query: Annotated[TravelQuery, Query()]):
 
     return travels
 
-@app.post("/token/")
+@app.post("/token")
 async def login_for_access_token(
     session: SessionDep,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
@@ -119,7 +117,7 @@ async def login_for_access_token(
     return Token(access_token=access_token,token_type="Bearer")
 
 
-@app.get("/users/me/", response_model=User)
+@app.get("/users/me", response_model=User)
 async def read_users_me(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
