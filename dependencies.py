@@ -8,8 +8,7 @@ from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta
 import pytz
 
-from models import User
-from forms import TokenData
+from models import User, TokenData
 from settings import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 from settings import engine
 

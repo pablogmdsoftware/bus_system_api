@@ -7,14 +7,15 @@ from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timedelta
 import pytz
 
-from forms import BusForm, UpdateBusForm, TravelQuery, Token, TokenData
-from models import Bus, Travel, User, Customer, CITIES
+from models import BusForm, UpdateBusForm, TravelQuery, Token, TokenData
+from models import Bus, Travel, User, Customer
+from models import CITIES, EndpointTags
 from dependencies import SessionDep, authenticate_user, create_access_token, get_current_user
 from dependencies import ACCESS_TOKEN_EXPIRE_MINUTES
 
 app = FastAPI()
 
-@app.get("/buses")
+@app.get("/buses", tags=[EndpointTags.system_information])
 def get_buses(session: SessionDep, limit: int | None = None) -> list[Bus]:
     if limit:
         buses = session.exec(select(Bus).limit(limit)).all()
@@ -22,12 +23,16 @@ def get_buses(session: SessionDep, limit: int | None = None) -> list[Bus]:
         buses = session.exec(select(Bus)).all()
     return buses
 
-@app.get("/buses/{bus_id}")
+@app.get("/buses/{bus_id}", tags=[EndpointTags.system_information])
 def get_bus(bus_id: str, session: SessionDep) -> Bus:
     bus = session.get(Bus, bus_id)
     if not bus:
         return HTTPException(status_code=404, detail="Bus not found")
     return bus
+
+@app.get("/cities", tags=[EndpointTags.system_information])
+def get_cities() -> dict:
+    return CITIES
 
 # @app.post("/buses")
 # def add_bus(form: BusForm, session: SessionDep):
@@ -69,10 +74,6 @@ def get_bus(bus_id: str, session: SessionDep) -> Bus:
 #     session.delete(bus)
 #     session.commit()
 #     return {"ok": True}
-
-@app.get("/cities")
-def get_cities():
-    return CITIES
 
 @app.get("/travels")
 def get_travels(session: SessionDep, query: Annotated[TravelQuery, Query()]):

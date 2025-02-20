@@ -28,10 +28,10 @@ class CityChoices(str, Enum):
     pontevedra = "PO"
 
 class EndpointTags(str, Enum):
-    system_information = "system_information"
+    system_information = "system information"
     travels = "travels"
     users = "users"
-    user_account = "user_account"
+    user_account = "user account"
 
 class Bus(SQLModel, table=True):
     __tablename__ = "booking_bus"
