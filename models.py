@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field, Relationship
-from sqlmodel import Column, DateTime, BigInteger, String
+from sqlmodel import Column, DateTime, BigInteger, String, ForeignKey, SmallInteger
 from sqlmodel import create_engine
 from datetime import datetime, date
 from enum import Enum
@@ -83,7 +83,16 @@ class UserPublic(SQLModel):
     has_large_family: bool
     has_reduced_mobility: bool
 
-engine = create_engine("postgresql://workuser:qwer1234@localhost:5432/bus_system")
+class Ticket(SQLModel, table=True):
+    __tablename__ = 'booking_ticket'
+    id: int | None = Field(sa_column=Column(BigInteger,primary_key=True),default=None)
+    seat_number: int = Field(sa_column=Column(SmallInteger,nullable=False))
+    price: int | None
+    purchase_datetime: datetime = Field(sa_column=Column(DateTime(timezone=True),nullable=False))
+    travel_id: int = Field(sa_column=Column(BigInteger,ForeignKey('booking_travel.id'),nullable=False))
+    user_id: int = Field(foreign_key='auth_user.id')
+
+engine = create_engine("postgresql://workuser:qwer1234@localhost:5432/fastapi_test")
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
