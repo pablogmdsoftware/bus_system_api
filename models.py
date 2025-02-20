@@ -23,6 +23,12 @@ class CityChoices(str, Enum):
     oviedo = "OV"
     pontevedra = "PO"
 
+class EndpointTags(str, Enum):
+    system_information = "system_information"
+    travels = "travels"
+    users = "users"
+    user_account = "user_account"
+
 class Bus(SQLModel, table=True):
     __tablename__ = "booking_bus"
     bus_id: str = Field(max_length=4,primary_key=True)
