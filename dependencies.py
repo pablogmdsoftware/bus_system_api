@@ -8,13 +8,11 @@ from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta
 import pytz
 
-from models import User, engine
+from models import User
 from forms import TokenData
+from settings import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from settings import engine
 
-
-SECRET_KEY = "5134ab42837ae88773721ae43e200d313c5cf6a89fe4f89f85f2e5230cd3f62b"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 90
 
 def get_session():
     with Session(engine) as session:

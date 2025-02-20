@@ -2,10 +2,11 @@ from pydantic import BaseModel, model_validator
 from pydantic import Field as PydanticField
 from sqlmodel import SQLModel, Field, Relationship
 from sqlmodel import Column, DateTime, BigInteger, String, ForeignKey, SmallInteger
-from sqlmodel import create_engine
 from typing_extensions import Self
 from enum import Enum
 from datetime import datetime, date
+from settings import engine
+
 
 CITIES = {
     "M":"Madrid",
@@ -135,7 +136,6 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: str | None = None
 
-engine = create_engine("postgresql://workuser:qwer1234@localhost:5432/fastapi_test")
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
