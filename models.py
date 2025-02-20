@@ -40,6 +40,11 @@ class Travel(SQLModel, table=True):
     destination: str = Field(max_length=2)
     bus_id: str = Field(max_length=4,foreign_key='booking_bus.bus_id')
 
+
+# There are two users tables in order to guarantee compatibility with the Django project
+# that manages the database. Django creates by default an user table and let you link to it
+# another table to add extra information.
+
 class User(SQLModel, table=True):
     __tablename__ = 'auth_user'
     id: int | None = Field(primary_key=True,default=None)
@@ -55,6 +60,10 @@ class User(SQLModel, table=True):
     date_joined: datetime = Field(sa_column=Column(DateTime(timezone=True),nullable=False))
 
 class Customer(SQLModel, table=True):
+    """
+    Application specific user table that has a one to one relation with the default user
+    table. It stores information of the users relevant to the application such as their birth_date.
+    """
     __tablename__ = 'booking_customer'
     id: int | None = Field(sa_column=Column(BigInteger,primary_key=True),default=None)
     birth_date: date | None
@@ -62,6 +71,17 @@ class Customer(SQLModel, table=True):
     has_reduced_mobility: bool
     user_id: int = Field(foreign_key='auth_user.id',unique=True)
 
+class UserPublic(SQLModel):
+    """
+    Users personal information.
+    """
+    username: str
+    first_name: str
+    last_name: str
+    email: str
+    birth_date: date
+    has_large_family: bool
+    has_reduced_mobility: bool
 
 engine = create_engine("postgresql://workuser:qwer1234@localhost:5432/bus_system")
 
