@@ -6,6 +6,7 @@ from typing_extensions import Self
 from enum import Enum
 from datetime import datetime, date
 from settings import engine
+import pytz
 
 
 CITIES = {
@@ -59,15 +60,19 @@ class User(SQLModel, table=True):
     __tablename__ = 'auth_user'
     id: int | None = Field(primary_key=True,default=None)
     password: str = Field(max_length=128)
-    last_login: datetime = Field(sa_column=Column(DateTime(timezone=True),nullable=True))
-    is_superuser: bool
+    last_login: datetime = Field(sa_column=Column(DateTime(timezone=True),nullable=True,default=None))
+    is_superuser: bool = False
     username: str = Field(sa_column=Column(String(150),unique=True,nullable=False))
-    first_name: str = Field(max_length=150)
-    last_name: str = Field(max_length=150)
+    first_name: str | None = Field(max_length=150)
+    last_name: str | None = Field(max_length=150)
     email: str = Field(max_length=254)
-    is_staff: bool
-    is_active: bool
-    date_joined: datetime = Field(sa_column=Column(DateTime(timezone=True),nullable=False))
+    is_staff: bool = False
+    is_active: bool = True
+    date_joined: datetime = Field(sa_column=Column(DateTime(timezone=True),
+                                                nullable=False,
+                                                default=datetime.now(pytz.timezone("Europe/Madrid")),
+                                            )
+                                        )
 
 class Customer(SQLModel, table=True):
     """
@@ -76,23 +81,37 @@ class Customer(SQLModel, table=True):
     """
     __tablename__ = 'booking_customer'
     id: int | None = Field(sa_column=Column(BigInteger,primary_key=True),default=None)
-    birth_date: date | None
-    has_large_family: bool
-    has_reduced_mobility: bool
+    birth_date: date | None = None
+    has_large_family: bool = False
+    has_reduced_mobility: bool = False
     user_id: int = Field(foreign_key='auth_user.id',unique=True)
 
-class UserPublic(SQLModel):
+class UserBase(SQLModel):
+    username: str
+    email: str
+
+class UserPublic(UserBase):
     """
     Users personal information.
     """
-    username: str
-    first_name: str
-    last_name: str
-    email: str
-    birth_date: date
+    id: int
+    first_name: str | None
+    last_name: str | None
+    birth_date: date | None
     has_large_family: bool
     has_reduced_mobility: bool
 
+class UserCreate(UserBase):
+    """
+    Information necessary to create a new user and its complementary customer entry.
+    """
+    not_hashed_password: str
+    first_name: str | None = Field(max_length=150,default=None)
+    last_name: str | None = Field(max_length=150,default=None)
+    birth_date: date | None = None
+    has_large_family: bool = False
+    has_reduced_mobility: bool = False
+    
 class Ticket(SQLModel, table=True):
     __tablename__ = 'booking_ticket'
     id: int | None = Field(sa_column=Column(BigInteger,primary_key=True),default=None)

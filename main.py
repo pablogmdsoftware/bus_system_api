@@ -6,9 +6,11 @@ from sqlmodel import SQLModel, Field, Session, select
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timedelta
 import pytz
+from passlib.context import CryptContext
 
 from models import BusForm, UpdateBusForm, TravelQuery, Token, TokenData
 from models import Bus, Travel, User, Customer
+from models import UserPublic, UserCreate
 from models import CITIES, EndpointTags
 from dependencies import SessionDep, authenticate_user, create_access_token, get_current_user
 from dependencies import ACCESS_TOKEN_EXPIRE_MINUTES
@@ -123,3 +125,40 @@ async def read_users_me(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     return current_user
+
+@app.post("/users")
+def add_user(session: SessionDep, user_create: UserCreate) -> UserPublic:
+    pw_context = CryptContext(schemes=["django_pbkdf2_sha256"],deprecated="auto")
+    password = pw_context.hash(user_create.not_hashed_password)
+    user = User(
+        password = password,
+        username = user_create.username,
+        email = user_create.email,
+        first_name = user_create.first_name,
+        last_name = user_create.last_name,
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    customer = Customer(
+        birth_date = user_create.birth_date,
+        has_large_family = user_create.has_large_family,
+        has_reduced_mobility = user_create.has_reduced_mobility,
+        user_id = user.id,
+    )
+    session.add(customer)
+    session.commit()
+
+    user_public = UserPublic(
+        id = user.id,
+        username = user.username,
+        email = user.email,
+        first_name = user.first_name,
+        last_name = user.last_name,
+        birth_date = customer.birth_date,
+        has_large_family = customer.has_large_family,
+        has_reduced_mobility = customer.has_reduced_mobility,
+    )
+
+    return user_public
