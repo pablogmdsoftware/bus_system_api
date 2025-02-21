@@ -120,7 +120,7 @@ def get_travels(session: SessionDep, query: Annotated[TravelQuery, Query()]):
             .where(Travel.schedule > first_hour, Travel.schedule < next_day)).all()     
 
     if not travels:
-        return HTTPException(status_code=404, detail="Travels not found")
+        raise HTTPException(status_code=204, detail="Travels not found")
 
     return travels
 
