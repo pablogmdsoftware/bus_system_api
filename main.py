@@ -79,6 +79,10 @@ def get_cities() -> dict:
 
 @app.get("/travels")
 def get_travels(session: SessionDep, query: Annotated[TravelQuery, Query()]):
+    """
+    Get the travels scheduled. Travels within a date range can be retrived 
+    setting to_date as the second date.
+    """
     first_hour = datetime(
         year = query.date.year,
         month = query.date.month,
