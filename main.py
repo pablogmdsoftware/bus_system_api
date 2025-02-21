@@ -80,26 +80,40 @@ def get_cities() -> dict:
 @app.get("/travels")
 def get_travels(session: SessionDep, query: Annotated[TravelQuery, Query()]):
     first_hour = datetime(
-        year = query.schedule.year,
-        month = query.schedule.month,
-        day = query.schedule.day,
+        year = query.date.year,
+        month = query.date.month,
+        day = query.date.day,
         hour = 0,
         minute = 0,
         tzinfo = pytz.timezone('Europe/Madrid'),
-        )
+    )
+    if not query.to_date:
+        query.to_date = query.date
     next_day = datetime(
-        year = query.schedule.year,
-        month = query.schedule.month,
-        day = query.schedule.day + 1,
+        year = query.to_date.year,
+        month = query.to_date.month,
+        day = query.to_date.day + 1,
         hour = 0,
         minute = 0,
         tzinfo = pytz.timezone('Europe/Madrid'),
     )
 
-    travels = session.exec(select(Travel)
-        .where(Travel.schedule > first_hour, Travel.schedule < next_day)     
-        .where(Travel.origin == query.origin)
-        .where(Travel.destination == query.destination)).all()
+    if query.origin and query.destination:
+        travels = session.exec(select(Travel)
+            .where(Travel.schedule > first_hour, Travel.schedule < next_day)     
+            .where(Travel.origin == query.origin)
+            .where(Travel.destination == query.destination)).all()
+    elif query.origin and not query.destination:
+        travels = session.exec(select(Travel)
+            .where(Travel.schedule > first_hour, Travel.schedule < next_day)     
+            .where(Travel.origin == query.origin)).all()
+    elif query.destination and not query.origin:
+        travels = session.exec(select(Travel)
+            .where(Travel.schedule > first_hour, Travel.schedule < next_day)     
+            .where(Travel.destination == query.destination)).all()
+    else:
+        travels = session.exec(select(Travel)
+            .where(Travel.schedule > first_hour, Travel.schedule < next_day)).all()     
 
     if not travels:
         return HTTPException(status_code=404, detail="Travels not found")

@@ -144,9 +144,10 @@ class TravelQuery(BaseModel):
     This model filter queries to search travels in the database. The schedule format
     is ISO 8601 (yyyy-mm-dd).
     """
-    origin: CityChoices
-    destination: CityChoices
-    schedule: date
+    origin: CityChoices | None = None
+    destination: CityChoices | None  = None
+    date: date
+    to_date: date | None = None
 
 class Token(BaseModel):
     access_token: str
