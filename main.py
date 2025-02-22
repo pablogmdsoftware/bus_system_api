@@ -77,7 +77,7 @@ def get_cities() -> dict:
 #     session.commit()
 #     return {"ok": True}
 
-@app.get("/travels")
+@app.get("/travels", tags=[EndpointTags.travels])
 def get_travels(session: SessionDep, query: Annotated[TravelQuery, Query()]):
     """
     Get the travels scheduled. Travels within a date range can be retrived 
@@ -124,27 +124,7 @@ def get_travels(session: SessionDep, query: Annotated[TravelQuery, Query()]):
 
     return travels
 
-@app.post("/token")
-async def login_for_access_token(
-    session: SessionDep,
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-) -> Token:
-    user = authenticate_user(session,form_data.username,form_data.password)
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data = {"sub":user.username},
-        expires_delta = access_token_expires,
-    )
-    return Token(access_token=access_token,token_type="Bearer")
-
-
-@app.get("/users/me", response_model=User)
-async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_user)],
-):
-    return current_user
-
-@app.post("/users")
+@app.post("/users", tags=[EndpointTags.user])
 def add_user(session: SessionDep, user_create: UserCreate) -> UserPublic:
     pw_context = CryptContext(schemes=["django_pbkdf2_sha256"],deprecated="auto")
     password = pw_context.hash(user_create.not_hashed_password)
@@ -180,3 +160,49 @@ def add_user(session: SessionDep, user_create: UserCreate) -> UserPublic:
     )
 
     return user_public
+
+@app.get("/users/me",tags=[EndpointTags.user], response_model=User)
+async def read_current_user(
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    return current_user
+
+@app.patch("/users/me", tags=[EndpointTags.user])
+def update_current_user(current_user: Annotated[User, Depends(get_current_user)]):
+    pass
+
+@app.delete("/users/me", tags=[EndpointTags.user])
+def delete_current_user(current_user: Annotated[User, Depends(get_current_user)]):
+    pass
+
+@app.get("/users/me/tickets", tags=[EndpointTags.ticket_management])
+def get_tickets(current_user: Annotated[User, Depends(get_current_user)]):
+    pass
+
+@app.post("/users/me/tickets", tags=[EndpointTags.ticket_management])
+def add_ticket(current_user: Annotated[User, Depends(get_current_user)]):
+    pass
+
+@app.get("/users/me/tickets/{ticket_id}", tags=[EndpointTags.ticket_management])
+def get_ticket(ticket_id: int, current_user: Annotated[User, Depends(get_current_user)]):
+    pass
+
+@app.delete("/users/me/tickets/{ticket_id}", tags=[EndpointTags.ticket_management])
+def delete_ticket_with_future_date(
+    ticket_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    pass
+
+@app.post("/token")
+async def login_for_access_token(
+    session: SessionDep,
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+) -> Token:
+    user = authenticate_user(session,form_data.username,form_data.password)
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data = {"sub":user.username},
+        expires_delta = access_token_expires,
+    )
+    return Token(access_token=access_token,token_type="Bearer")

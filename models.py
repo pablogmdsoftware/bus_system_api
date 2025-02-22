@@ -31,8 +31,8 @@ class CityChoices(str, Enum):
 class EndpointTags(str, Enum):
     system_information = "system information"
     travels = "travels"
-    users = "users"
-    user_account = "user account"
+    user = "user account"
+    ticket_management = "ticket management"
 
 class Bus(SQLModel, table=True):
     __tablename__ = "booking_bus"
