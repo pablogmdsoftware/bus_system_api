@@ -95,7 +95,6 @@ class UserPublic(UserBase):
     """
     Users personal information.
     """
-    id: int
     first_name: str | None
     last_name: str | None
     birth_date: date | None

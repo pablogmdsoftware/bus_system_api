@@ -167,11 +167,22 @@ def add_user(session: SessionDep, user_create: UserCreate) -> UserPublic:
 
     return user_public
 
-@app.get("/users/me",tags=[EndpointTags.user], response_model=User)
+@app.get("/users/me",tags=[EndpointTags.user])
 async def read_current_user(
     current_user: Annotated[User, Depends(get_current_user)],
-):
-    return current_user
+    session: SessionDep,
+) -> UserPublic:
+    customer = session.exec(select(Customer).where(Customer.user_id==current_user.id)).first()
+    user = UserPublic(
+        username = current_user.username,
+        email = current_user.email,
+        first_name = current_user.first_name,
+        last_name = current_user.last_name,
+        birth_date = customer.birth_date,
+        has_large_family = customer.has_large_family,
+        has_reduced_mobility = customer.has_reduced_mobility,
+    )
+    return user
 
 @app.patch("/users/me", tags=[EndpointTags.user])
 def update_current_user(current_user: Annotated[User, Depends(get_current_user)]):
@@ -182,7 +193,7 @@ def delete_current_user(
     session: SessionDep,
     current_user: Annotated[User, Depends(get_current_user)],
     confirmation: bool = False,
-):
+) -> dict:
     """
     Delete your current user. As a safety measure, confirmation parameter is set
     false by default.
