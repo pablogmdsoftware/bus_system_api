@@ -33,7 +33,7 @@ def get_bus(bus_id: str, session: SessionDep) -> Bus:
     return bus
 
 @app.get("/cities", tags=[EndpointTags.system_information])
-def get_cities() -> dict:
+def get_cities():
     return CITIES
 
 # @app.post("/buses")
@@ -135,8 +135,14 @@ def add_user(session: SessionDep, user_create: UserCreate) -> UserPublic:
         first_name = user_create.first_name,
         last_name = user_create.last_name,
     )
-    session.add(user)
-    session.commit()
+    try:    
+        session.add(user)
+        session.commit()
+    except IntegrityError:
+        raise HTTPException(
+            status_code=409,
+            detail="That username is already taken, please choose another."
+        )
     session.refresh(user)
 
     customer = Customer(

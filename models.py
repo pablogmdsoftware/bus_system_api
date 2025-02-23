@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, EmailStr, model_validator
 from pydantic import Field as PydanticField
 from sqlmodel import SQLModel, Field, Relationship
 from sqlmodel import Column, DateTime, BigInteger, String, ForeignKey, SmallInteger
@@ -65,10 +65,11 @@ class User(SQLModel, table=True):
     username: str = Field(sa_column=Column(String(150),unique=True,nullable=False))
     first_name: str | None = Field(max_length=150)
     last_name: str | None = Field(max_length=150)
-    email: str = Field(max_length=254)
+    email: EmailStr = Field(max_length=254)
     is_staff: bool = False
     is_active: bool = True
-    date_joined: datetime = Field(sa_column=Column(DateTime(timezone=True),
+    date_joined: datetime = Field(sa_column=Column(
+                                                DateTime(timezone=True),
                                                 nullable=False,
                                                 default=datetime.now(pytz.timezone("Europe/Madrid")),
                                             )
@@ -87,8 +88,8 @@ class Customer(SQLModel, table=True):
     user_id: int = Field(foreign_key='auth_user.id',unique=True)
 
 class UserBase(SQLModel):
-    username: str
-    email: str
+    username: str = Field(max_length=150)
+    email: EmailStr = Field(max_length=254)
 
 class UserPublic(UserBase):
     """
@@ -105,12 +106,47 @@ class UserCreate(UserBase):
     """
     Information necessary to create a new user and its complementary customer entry.
     """
-    not_hashed_password: str
+    not_hashed_password: str = Field(max_length=128)
+    not_hashed_password_repeat: str = Field(max_length=128)
     first_name: str | None = Field(max_length=150,default=None)
     last_name: str | None = Field(max_length=150,default=None)
     birth_date: date | None = None
     has_large_family: bool = False
     has_reduced_mobility: bool = False
+
+    @model_validator(mode='after')
+    def validate_password_is_strong(self) -> Self:
+        weak_password_message = """
+        Weak password. It must contain at least 8 characters
+        using letters and numbers. 
+        """
+        password = self.not_hashed_password
+        if len(password) < 8:
+            raise ValueError(weak_password_message)
+        weak = {
+            "has_letter": False,
+            "has_digit": False,
+        }
+        for character in password:
+            if character.islower() or character.isupper():
+                weak["has_letter"] = True
+                break
+        for character in password:
+            if character.isdigit():
+                weak["has_digit"] = True
+                break
+        if weak["has_letter"] and weak["has_digit"]:
+            return self
+        else:
+            raise ValidationError(weak_password_message)
+
+    @model_validator(mode='after')
+    def validate_password_match(self) -> Self:
+        if self.not_hashed_password != self.not_hashed_password_repeat:
+            raise ValueError(
+                "Passwords do not match."
+            )
+        return self
     
 class Ticket(SQLModel, table=True):
     __tablename__ = 'booking_ticket'
