@@ -178,8 +178,22 @@ def update_current_user(current_user: Annotated[User, Depends(get_current_user)]
     pass
 
 @app.delete("/users/me", tags=[EndpointTags.user])
-def delete_current_user(current_user: Annotated[User, Depends(get_current_user)]):
-    pass
+def delete_current_user(
+    session: SessionDep,
+    current_user: Annotated[User, Depends(get_current_user)],
+    confirmation: bool = False,
+):
+    """
+    Delete your current user. As a safety measure, confirmation parameter is set
+    false by default.
+    """
+    if not confirmation:
+        raise HTTPException(status_code=400,detail="Set confirmation equals true to delete an user.")
+    customer = session.exec(select(Customer).where(Customer.user_id==current_user.id)).first()
+    session.delete(customer)
+    session.delete(current_user)
+    session.commit()
+    return {"ok":f"Your account has been deleted successfully."}
 
 @app.get("/users/me/tickets", tags=[EndpointTags.ticket_management])
 def get_tickets(current_user: Annotated[User, Depends(get_current_user)]):
