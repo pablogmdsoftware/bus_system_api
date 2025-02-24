@@ -10,7 +10,7 @@ from passlib.context import CryptContext
 
 from models import BusForm, UpdateBusForm, TravelQuery, Token, TokenData
 from models import Bus, Travel, User, Customer
-from models import UserPublic, UserCreate, PasswordChange
+from models import UserPublic, UserCreate, PasswordChange, UserUpdate
 from models import CITIES, EndpointTags
 from dependencies import SessionDep, authenticate_user, create_access_token, get_current_user
 from dependencies import ACCESS_TOKEN_EXPIRE_MINUTES, pw_context
@@ -185,8 +185,34 @@ async def read_current_user(
     return user
 
 @app.patch("/users/me", tags=[EndpointTags.user])
-def update_current_user(current_user: Annotated[User, Depends(get_current_user)]):
-    pass
+def update_current_user(
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: SessionDep,
+    user: UserUpdate,
+) -> UserPublic:
+    customer = session.exec(select(Customer).where(Customer.user_id==current_user.id)).first()
+    user_data = user.model_dump(exclude_unset=True)
+    
+    current_user.sqlmodel_update(user_data)
+    customer.sqlmodel_update(user_data)
+
+    session.add(current_user)
+    session.add(customer)
+    session.commit()
+    session.refresh(current_user)
+    session.refresh(customer)
+
+    user = UserPublic(
+        username = current_user.username,
+        email = current_user.email,
+        first_name = current_user.first_name,
+        last_name = current_user.last_name,
+        birth_date = customer.birth_date,
+        has_large_family = customer.has_large_family,
+        has_reduced_mobility = customer.has_reduced_mobility,
+    )
+
+    return user
 
 @app.patch("/users/me/change-password", tags=[EndpointTags.user])
 def change_password(

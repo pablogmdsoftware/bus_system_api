@@ -152,6 +152,15 @@ class UserCreate(UserBase, PasswordMatch):
 class PasswordChange(PasswordMatch):
     old_password: str = Field(max_length=128)
 
+class UserUpdate(UserBase):
+    username: str | None = Field(max_length=150,default=None)
+    email: EmailStr | None = Field(max_length=254,default=None)
+    first_name: str | None = Field(max_length=150,default=None)
+    last_name: str | None = Field(max_length=150,default=None)
+    birth_date: date | None = None
+    has_large_family: bool | None = None
+    has_reduced_mobility: bool | None = None
+
     
 class Ticket(SQLModel, table=True):
     __tablename__ = 'booking_ticket'
