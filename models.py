@@ -91,27 +91,9 @@ class UserBase(SQLModel):
     username: str = Field(max_length=150)
     email: EmailStr = Field(max_length=254)
 
-class UserPublic(UserBase):
-    """
-    Users personal information.
-    """
-    first_name: str | None
-    last_name: str | None
-    birth_date: date | None
-    has_large_family: bool
-    has_reduced_mobility: bool
-
-class UserCreate(UserBase):
-    """
-    Information necessary to create a new user and its complementary customer entry.
-    """
+class PasswordMatch(SQLModel):
     not_hashed_password: str = Field(max_length=128)
     not_hashed_password_repeat: str = Field(max_length=128)
-    first_name: str | None = Field(max_length=150,default=None)
-    last_name: str | None = Field(max_length=150,default=None)
-    birth_date: date | None = None
-    has_large_family: bool = False
-    has_reduced_mobility: bool = False
 
     @model_validator(mode='after')
     def validate_password_is_strong(self) -> Self:
@@ -146,6 +128,30 @@ class UserCreate(UserBase):
                 "Passwords do not match."
             )
         return self
+
+class UserPublic(UserBase):
+    """
+    Users personal information.
+    """
+    first_name: str | None
+    last_name: str | None
+    birth_date: date | None
+    has_large_family: bool
+    has_reduced_mobility: bool
+
+class UserCreate(UserBase, PasswordMatch):
+    """
+    Information necessary to create a new user and its complementary customer entry.
+    """
+    first_name: str | None = Field(max_length=150,default=None)
+    last_name: str | None = Field(max_length=150,default=None)
+    birth_date: date | None = None
+    has_large_family: bool = False
+    has_reduced_mobility: bool = False
+
+class PasswordChange(PasswordMatch):
+    old_password: str = Field(max_length=128)
+
     
 class Ticket(SQLModel, table=True):
     __tablename__ = 'booking_ticket'

@@ -10,10 +10,10 @@ from passlib.context import CryptContext
 
 from models import BusForm, UpdateBusForm, TravelQuery, Token, TokenData
 from models import Bus, Travel, User, Customer
-from models import UserPublic, UserCreate
+from models import UserPublic, UserCreate, PasswordChange
 from models import CITIES, EndpointTags
 from dependencies import SessionDep, authenticate_user, create_access_token, get_current_user
-from dependencies import ACCESS_TOKEN_EXPIRE_MINUTES
+from dependencies import ACCESS_TOKEN_EXPIRE_MINUTES, pw_context
 
 app = FastAPI()
 
@@ -187,6 +187,19 @@ async def read_current_user(
 @app.patch("/users/me", tags=[EndpointTags.user])
 def update_current_user(current_user: Annotated[User, Depends(get_current_user)]):
     pass
+
+@app.patch("/users/me/change-password", tags=[EndpointTags.user])
+def change_password(
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: SessionDep,
+    password_obj: PasswordChange,
+) -> dict:
+    if not pw_context.verify(password_obj.old_password,current_user.password):
+        raise ValueError("Old password was not correct.")
+    current_user.password = pw_context.hash(password_obj.not_hashed_password)
+    session.add(current_user)
+    session.commit()
+    return {"ok":True}
 
 @app.delete("/users/me", tags=[EndpointTags.user])
 def delete_current_user(
