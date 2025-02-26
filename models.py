@@ -161,16 +161,6 @@ class UserUpdate(UserBase):
     has_large_family: bool | None = None
     has_reduced_mobility: bool | None = None
 
-    
-class Ticket(SQLModel, table=True):
-    __tablename__ = 'booking_ticket'
-    id: int | None = Field(sa_column=Column(BigInteger,primary_key=True),default=None)
-    seat_number: int = Field(sa_column=Column(SmallInteger,nullable=False))
-    price: int | None
-    purchase_datetime: datetime = Field(sa_column=Column(DateTime(timezone=True),nullable=False))
-    travel_id: int = Field(sa_column=Column(BigInteger,ForeignKey('booking_travel.id'),nullable=False))
-    user_id: int = Field(foreign_key='auth_user.id')
-
 class BusForm(BaseModel):
     bus_id: str = PydanticField(pattern=r'[A-Z]{2}[0-9]{2}',max_length=4)
     seats : int = PydanticField(ge=8,le=72)
@@ -206,6 +196,22 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: str | None = None
 
+class TicketBase(SQLModel):
+    id: int
+    seat_number: int
+    price: int
+
+class Ticket(TicketBase, table=True):
+    __tablename__ = 'booking_ticket'
+    id: int | None = Field(sa_column=Column(BigInteger,primary_key=True),default=None)
+    seat_number: int = Field(sa_column=Column(SmallInteger,nullable=False))
+    price: int | None
+    purchase_datetime: datetime = Field(sa_column=Column(DateTime(timezone=True),nullable=False))
+    travel_id: int = Field(sa_column=Column(BigInteger,ForeignKey('booking_travel.id'),nullable=False))
+    user_id: int = Field(foreign_key='auth_user.id')
+
+
+# Create the tables in the database running *python3 models.py*.
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
