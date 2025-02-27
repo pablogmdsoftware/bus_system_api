@@ -9,7 +9,7 @@ import pytz
 from passlib.context import CryptContext
 
 from models import BusForm, UpdateBusForm, TravelQuery, Token, TokenData
-from models import Bus, Travel, User, Customer
+from models import Bus, Travel, User, Customer, Ticket, TicketPublic, TicketBase
 from models import UserPublic, UserCreate, PasswordChange, UserUpdate
 from models import CITIES, EndpointTags
 from dependencies import SessionDep, authenticate_user, create_access_token, get_current_user
@@ -253,9 +253,35 @@ def get_tickets(current_user: Annotated[User, Depends(get_current_user)]):
 def add_ticket(current_user: Annotated[User, Depends(get_current_user)]):
     pass
 
-@app.get("/users/me/tickets/{ticket_id}", tags=[EndpointTags.ticket_management])
-def get_ticket(ticket_id: int, current_user: Annotated[User, Depends(get_current_user)]):
-    pass
+@app.get(
+    "/users/me/tickets/{ticket_id}",
+    tags = [EndpointTags.ticket_management],
+    # response_model = TicketPublic,
+)
+def get_ticket(
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: SessionDep,
+    ticket_id: int,
+) -> TicketPublic:
+    statement = select(Ticket,Travel).join(Travel).where(Ticket.id==ticket_id)
+    data = session.exec(statement).first()
+    if not data:
+        raise HTTPException(status_code=404,detail="Item not found.")
+
+    ticket, travel = data
+    if ticket.user_id != current_user.id:
+        raise HTTPException(status_code=404,detail="Item not found.")
+
+    ticket_public = TicketPublic(
+        id = ticket.id,
+        seat_number = ticket.seat_number,
+        price = ticket.price,
+        origin = travel.origin,
+        destination = travel.destination,
+        schedule = travel.schedule,
+    )
+    
+    return ticket_public
 
 @app.delete("/users/me/tickets/{ticket_id}", tags=[EndpointTags.ticket_management])
 def delete_ticket_with_future_date(
