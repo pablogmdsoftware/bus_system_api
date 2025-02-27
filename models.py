@@ -210,6 +210,11 @@ class Ticket(TicketBase, table=True):
     travel_id: int = Field(sa_column=Column(BigInteger,ForeignKey('booking_travel.id'),nullable=False))
     user_id: int = Field(foreign_key='auth_user.id')
 
+class TicketPublic(TicketBase):
+    origin: str
+    destination: str
+    schedule: datetime
+
 
 # Create the tables in the database running *python3 models.py*.
 
