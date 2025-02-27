@@ -246,13 +246,32 @@ def delete_current_user(
     return {"ok":f"Your account has been deleted successfully."}
 
 @app.get("/users/me/tickets", tags=[EndpointTags.ticket_management])
-def get_tickets(current_user: Annotated[User, Depends(get_current_user)]):
-    pass
+def get_tickets(
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: SessionDep,
+) -> list[TicketPublic]:
+    statement = select(Ticket,Travel).join(Travel).where(Ticket.user_id==current_user.id)
+    data = session.exec(statement).all()
+    if not data:
+        raise HTTPException(status_code=404,detail="You have not purchased any ticket yet.")
+
+    ticket_list = []
+    for ticket, travel in data:
+        ticket_public = TicketPublic(
+            id = ticket.id,
+            seat_number = ticket.seat_number,
+            price = ticket.price,
+            origin = travel.origin,
+            destination = travel.destination,
+            schedule = travel.schedule,
+        )
+        ticket_list.append(ticket_public)
+
+    return ticket_list
 
 @app.get(
     "/users/me/tickets/{ticket_id}",
     tags = [EndpointTags.ticket_management],
-    # response_model = TicketPublic,
 )
 def get_ticket(
     current_user: Annotated[User, Depends(get_current_user)],
