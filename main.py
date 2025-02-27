@@ -300,10 +300,27 @@ def get_ticket(
 
 @app.delete("/users/me/tickets/{ticket_id}", tags=[EndpointTags.ticket_management])
 def delete_ticket_with_future_date(
-    ticket_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
-):
-    pass
+    session: SessionDep,
+    ticket_id: int,
+) -> dict:
+    ticket = session.get(Ticket,ticket_id)
+    if not ticket:
+        raise HTTPException(status_code=404,detail="Item not found")
+    if ticket.user_id != current_user.id:
+        raise HTTPException(status_code=404,detail="Item not found")
+
+    day = session.get(Travel,ticket.travel_id).schedule
+    if day < datetime.now(pytz.timezone("Europe/Madrid")) + timedelta(days=1):
+        raise HTTPException(
+            status_code=400,
+            detail="You can not cancel tickets with less than one day remaining.",
+        )
+
+    session.delete(ticket)
+    session.commit()
+
+    return {"ok":True}
 
 @app.post("/token")
 async def login_for_access_token(
