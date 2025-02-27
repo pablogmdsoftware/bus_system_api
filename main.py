@@ -249,10 +249,6 @@ def delete_current_user(
 def get_tickets(current_user: Annotated[User, Depends(get_current_user)]):
     pass
 
-@app.post("/users/me/tickets", tags=[EndpointTags.ticket_management])
-def add_ticket(current_user: Annotated[User, Depends(get_current_user)]):
-    pass
-
 @app.get(
     "/users/me/tickets/{ticket_id}",
     tags = [EndpointTags.ticket_management],
