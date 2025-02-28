@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Query, status
+from fastapi import FastAPI, Depends, HTTPException, Query, Body, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from typing import Annotated
@@ -188,7 +188,19 @@ async def read_current_user(
 def update_current_user(
     current_user: Annotated[User, Depends(get_current_user)],
     session: SessionDep,
-    user: UserUpdate,
+    user: Annotated[UserUpdate,Body(
+        examples = [
+            {
+                "username": "string",
+                "email": "user@example.com",
+                "first_name": "string",
+                "last_name": "string",
+                "birth_date": "2000-03-15",
+                "has_large_family": False,
+                "has_reduced_mobility": False,
+            }
+        ]
+    )],
 ) -> UserPublic:
     customer = session.exec(select(Customer).where(Customer.user_id==current_user.id)).first()
     user_data = user.model_dump(exclude_unset=True)
