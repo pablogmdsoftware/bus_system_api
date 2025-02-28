@@ -125,7 +125,24 @@ def get_travels(session: SessionDep, query: Annotated[TravelQuery, Query()]):
     return travels
 
 @app.post("/users", tags=[EndpointTags.user])
-def add_user(session: SessionDep, user_create: UserCreate) -> UserPublic:
+def add_user(
+    session: SessionDep,
+    user_create: Annotated[UserCreate,Body(
+        examples = [
+            {
+                "username": "string",
+                "email": "user@example.com",
+                "not_hashed_password": "min8characters",
+                "not_hashed_password_repeat": "min8characters",
+                "first_name": "string",
+                "last_name": "string",
+                "birth_date": "2000-03-15",
+                "has_large_family": False,
+                "has_reduced_mobility": False
+            }
+        ]
+    )],
+) -> UserPublic:
     pw_context = CryptContext(schemes=["django_pbkdf2_sha256"],deprecated="auto")
     password = pw_context.hash(user_create.not_hashed_password)
     user = User(
