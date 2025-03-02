@@ -40,6 +40,19 @@ class Bus(SQLModel, table=True):
     seats: int = Field()
     seats_first_row: int = Field()
     seats_reduced_mobility: int = Field()
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "bus_id": "AA00",
+                    "seats": 64,
+                    "seats_first_row": 4,
+                    "seats_reduced_mobility": 0
+                }
+            ]
+        }
+    }
     
 class Travel(SQLModel, table=True):
     __tablename__ = 'booking_travel'
