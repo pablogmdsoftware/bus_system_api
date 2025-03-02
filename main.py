@@ -79,7 +79,10 @@ def get_cities():
 #     return {"ok": True}
 
 @app.get("/travels", tags=[EndpointTags.travels])
-def get_travels(session: SessionDep, query: Annotated[TravelQuery, Query()]):
+def get_travels(
+    session: SessionDep,
+    query: Annotated[TravelQuery, Query()]
+) -> list[Travel]:
     """
     Get the travels scheduled. Travels within a date range can be retrived 
     setting to_date as the second date.
@@ -92,8 +95,10 @@ def get_travels(session: SessionDep, query: Annotated[TravelQuery, Query()]):
         minute = 0,
         tzinfo = pytz.timezone('Europe/Madrid'),
     )
+
     if not query.to_date:
         query.to_date = query.date
+
     next_day = datetime(
         year = query.to_date.year,
         month = query.to_date.month,

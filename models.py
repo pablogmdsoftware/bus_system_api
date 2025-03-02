@@ -41,8 +41,6 @@ class Bus(SQLModel, table=True):
     seats_first_row: int = Field()
     seats_reduced_mobility: int = Field()
     
-    # travels: list["Travel"] = Relationship(back_populates="travel",passive_deletes="all")
-
 class Travel(SQLModel, table=True):
     __tablename__ = 'booking_travel'
     id: int | None = Field(sa_column=Column(BigInteger,primary_key=True),default=None)
@@ -50,6 +48,20 @@ class Travel(SQLModel, table=True):
     origin: str = Field(max_length=2)
     destination: str = Field(max_length=2)
     bus_id: str = Field(max_length=4,foreign_key='booking_bus.bus_id')
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 0,
+                    "schedule": "2025-05-14T12:39:25.942Z",
+                    "origin": "M",
+                    "destination": "OV",
+                    "bus_id": "AA00",
+                }
+            ]
+        }
+    }
 
 
 # There are two users tables in order to guarantee compatibility with the Django project
