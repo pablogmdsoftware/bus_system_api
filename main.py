@@ -34,7 +34,7 @@ def get_bus(bus_id: str, session: SessionDep) -> Bus:
     return bus
 
 @app.get("/cities", tags=[EndpointTags.system_information])
-def get_cities():
+def get_cities() -> dict:
     return CITIES
 
 # @app.post("/buses")
