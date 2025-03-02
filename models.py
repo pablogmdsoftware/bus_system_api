@@ -196,6 +196,9 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: str | None = None
 
+class Message(BaseModel):
+    message: str
+
 class TicketBase(SQLModel):
     id: int
     seat_number: int

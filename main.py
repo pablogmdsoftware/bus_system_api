@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, Query, Body, status
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Annotated
 from sqlmodel import SQLModel, Field, Session, select
@@ -11,7 +12,7 @@ from passlib.context import CryptContext
 from models import BusForm, UpdateBusForm, TravelQuery, Token, TokenData
 from models import Bus, Travel, User, Customer, Ticket, TicketPublic, TicketBase
 from models import UserPublic, UserCreate, PasswordChange, UserUpdate
-from models import CITIES, EndpointTags
+from models import CITIES, EndpointTags, Message
 from dependencies import SessionDep, authenticate_user, create_access_token, get_current_user
 from dependencies import ACCESS_TOKEN_EXPIRE_MINUTES, pw_context
 
@@ -124,7 +125,7 @@ def get_travels(session: SessionDep, query: Annotated[TravelQuery, Query()]):
 
     return travels
 
-@app.post("/users", tags=[EndpointTags.user])
+@app.post("/users", tags=[EndpointTags.user], responses = {409: {"model": Message}},)
 def add_user(
     session: SessionDep,
     user_create: Annotated[UserCreate,Body(
@@ -156,9 +157,9 @@ def add_user(
         session.add(user)
         session.commit()
     except IntegrityError:
-        raise HTTPException(
+        return JSONResponse(
             status_code=409,
-            detail="That username is already taken, please choose another."
+            content = {"message": "That username is already taken, please choose another."}
         )
     session.refresh(user)
 
